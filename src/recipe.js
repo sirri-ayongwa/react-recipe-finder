@@ -141,7 +141,7 @@ function Recipe() {
       </div>
 
       <footer className="app-footer">
-        <p>Recipe Finder by Sirri Ayongwa | © 2024 All rights reserved</p>
+        <p>Recipe Finder by <a href='https://www.linkedin.com/in/sirriayongwa/' target='blank'>Sirri Ayongwa</a> | © 2024 All rights reserved</p>
       </footer>
     </div>
   );
