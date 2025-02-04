@@ -104,11 +104,19 @@ h1 {
     color: #ccc;
 }
 
+.app-footer a {
+    color: white;
+}
+
+.app-footer a:hover {
+    color: #ff0000;
+}
+
 /* My Faves Button */
 .view-faves-btn {
     position: absolute;
     top: -30px;
-    right: -80px;
+    right: 150px;
     background-color: black;
     color: white;
     padding: 10px 15px;
@@ -123,42 +131,162 @@ h1 {
     background-color: rgb(88, 14, 14);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+    .app-container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 2.8rem;
+    }
+
     .search-bar {
-        width: 90%;
+        width: 85%;
+        font-size: 1.1rem;
+    }
+
+    .recipe-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .recipe-card {
+        padding: 18px;
     }
 
     .recipe-title {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
+    }
+
+    .add-fav-btn, .view-faves-btn {
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    .search-bar {
+        width: 90%;
+        font-size: 1rem;
+    }
+
+    .recipe-grid {
+        gap: 15px;
     }
 
     .recipe-card {
         padding: 15px;
     }
 
-    .faves-button {
-        top: 5px;
+    .recipe-title {
+        font-size: 1.2rem;
+    }
+
+    .add-fav-btn {
+        font-size: 0.9rem;
+        padding: 7px 10px;
+    }
+
+    .view-faves-btn {
+        top: -25px;
         right: 10px;
-        padding: 8px 12px;
-        font-size: 1rem;
+        font-size: 0.9rem;
+        padding: 8px 10px;
     }
 }
 
 @media (max-width: 480px) {
     h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
 
     .search-bar {
+        width: 100%;
+        font-size: 0.9rem;
+    }
+
+    .recipe-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .recipe-card {
+        padding: 10px;
+    }
+
+    .recipe-title {
         font-size: 1rem;
     }
 
     .add-fav-btn {
+        font-size: 0.8rem;
+        padding: 6px 8px;
+    }
+
+    .view-faves-btn {
+        font-size: 0.8rem;
+        padding: 6px 8px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .app-container {
+        max-width: 1400px;
+    }
+
+    h1 {
+        font-size: 3.5rem;
+    }
+
+    .recipe-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+    }
+
+    .recipe-card {
+        padding: 25px;
+    }
+
+    .recipe-title {
+        font-size: 1.7rem;
+    }
+
+    .add-fav-btn, .view-faves-btn {
+        font-size: 1.1rem;
+        padding: 10px 15px;
+    }
+}
+
+/* Extra Small Devices (Up to 360px) */
+@media (max-width: 360px) {
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .search-bar {
+        font-size: 0.8rem;
+        padding: 10px;
+    }
+
+    .recipe-card {
+        padding: 8px;
+    }
+
+    .recipe-title {
         font-size: 0.9rem;
     }
 
-    .faves-button {
-        padding: 6px 10px;
-        font-size: 0.9rem;
+    .add-fav-btn {
+        font-size: 0.7rem;
+        padding: 5px 8px;
+    }
+
+    .view-faves-btn {
+        font-size: 0.7rem;
+        padding: 5px 8px;
     }
 }
