@@ -1,150 +1,175 @@
-import React, { useState, useEffect, useRef } from 'react'; // Import necessary hooks from React
-import axios from 'axios';
-import './recipe.css';
+import React, { useEffect, useState } from 'react';
+import './App.css';
 
-const API_URL = 'https://api.spoonacular.com/recipes/complexSearch';
-const API_KEY = 'a1ace945d22742aba4236246f79ce278';
+const API_KEY = 'e19e03487d104aa5813d4a625cd56c81';
 
-// Custom hook for fetching recipes
-const useFetchRecipes = (searchTerm) => {
-  const [recipes, setRecipes] = useState([]);
-
-  const generateRandomTime = () => {
-    const times = [30, 45, 60, 75, 90]; 
-    return times[Math.floor(Math.random() * times.length)];
-  };
-
-  const generateRandomServings = () => {
-    const servings = [2, 4, 6, 8]; 
-    return servings[Math.floor(Math.random() * servings.length)];
-  };
+export default function App() {
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+  const [showFavorites, setShowFavorites] = useState(false);
 
   useEffect(() => {
-    if (searchTerm) {
-      const fetchRecipes = async () => {
-        try {
-          const response = await axios.get(`${API_URL}`, {
-            params: {
-              apiKey: API_KEY,
-              query: searchTerm,
-              number: 10,
-            },
-          });
-          const updatedRecipes = response.data.results.map((recipe) => ({
-            ...recipe,
-            readyInMinutes: generateRandomTime(),
-            servings: generateRandomServings(),
-          }));
-          setRecipes(updatedRecipes);
-        } catch (error) {
-          console.error('Error fetching recipes:', error);
-        }
-      };
+    if (search.trim()) {
       fetchRecipes();
     }
-  }, [searchTerm]);
+  }, [search]);
 
-  return recipes; 
-};
-
-function Recipe() {
-  const [searchTerm, setSearchTerm] = useState(''); // useState for storing search term input
-  const [favorites, setFavorites] = useState(() => {
-    const savedFaves = localStorage.getItem('favorites');
-    return savedFaves ? JSON.parse(savedFaves) : [];
-  }); // useState for storing favorites
-
-  const [viewFavorites, setViewFavorites] = useState(false); // useState to toggle between recipes and favorites view
-  const searchInputRef = useRef(null); // useRef to manage input focus
-
-  const recipes = useFetchRecipes(searchTerm); // Using the custom hook to fetch recipes
-
-  
-  useEffect(() => {
-    searchInputRef.current.focus();
-  }, []); 
-
-  
-  const addToFavorites = (recipe) => {
-    if (!favorites.some((fav) => fav.id === recipe.id)) {
-      const updatedFavorites = [...favorites, recipe];
-      setFavorites(updatedFavorites);
-      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+  const fetchRecipes = async () => {
+    try {
+      const response = await fetch(
+        `https://api.spoonacular.com/recipes/complexSearch?query=${search}&number=12&addRecipeInformation=true&apiKey=${API_KEY}`
+      );
+      const data = await response.json();
+      setResults(data.results || []);
+    } catch (error) {
+      console.error('Error fetching recipes:', error);
     }
   };
 
-  
-  const removeFromFavorites = (id) => {
-    const updatedFavorites = favorites.filter((recipe) => recipe.id !== id);
-    setFavorites(updatedFavorites);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+  const viewRecipe = async (id) => {
+    try {
+      const response = await fetch(
+        `https://api.spoonacular.com/recipes/${id}/information?includeNutrition=false&apiKey=${API_KEY}`
+      );
+      const data = await response.json();
+      setSelectedRecipe(data);
+    } catch (error) {
+      console.error('Error fetching recipe details:', error);
+    }
   };
 
+  const closeModal = () => {
+    setSelectedRecipe(null);
+  };
+
+  const toggleFavorites = () => {
+    setShowFavorites(!showFavorites);
+  };
+
+  const addToFavorites = (recipe) => {
+    if (!favorites.some(r => r.id === recipe.id)) {
+      setFavorites([...favorites, recipe]);
+    }
+    closeModal();
+  };
+
+  const removeFromFavorites = (id) => {
+    setFavorites(favorites.filter(r => r.id !== id));
+  };
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <h1>Recipe Finder</h1>
-        <div className="header-right">
-          <input
-            ref={searchInputRef} // Using useRef to set focus on this input element
-            type="text"
-            className="search-bar"
-            placeholder="Search recipes by ingredients..."
-            value={searchTerm} // Controlled input with useState
-            onChange={(e) => setSearchTerm(e.target.value)} // Updating searchTerm with useState
-          />
-          <button className="view-faves-btn" onClick={() => setViewFavorites(!viewFavorites)}>
-            {viewFavorites ? 'Back to Recipes' : 'My Faves'}
-          </button>
-        </div>
+    <div className="container">
+      <div className="bg-element"></div>
+      <div className="bg-element"></div>
+      <div className="bg-element"></div>
+
+      <header className="header">
+        <div className="logo">🍳 Recipe Finder</div>
+        <button className="faves-btn" onClick={toggleFavorites}>
+          <span>❤️</span> My Favorites
+        </button>
       </header>
 
-      <div className="recipe-grid">
-        {viewFavorites ? (
-          favorites.length > 0 ? (
-            favorites.map((recipe, index) => (
-              <div key={index} className="recipe-card">
-                <img src={recipe.image} alt={recipe.title} className="recipe-image" />
-                <h3 className="recipe-title">{recipe.title}</h3>
-                <button className="remove-fav-btn" onClick={() => removeFromFavorites(recipe.id)}>
-                  Remove from Favorites
-                </button>
-                <div className="recipe-details">
-                  <p><strong>Ready in:</strong> {recipe.readyInMinutes} mins</p>
-                  <p><strong>Servings:</strong> {recipe.servings}</p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p>No favorites yet! Add some recipes to favorites.</p>
-          )
-        ) : (
-          recipes.length > 0 ? (
-            recipes.map((recipe, index) => (
-              <div key={index} className="recipe-card">
-                <img src={recipe.image} alt={recipe.title} className="recipe-image" />
-                <h3 className="recipe-title">{recipe.title}</h3>
-                <button className="add-fav-btn" onClick={() => addToFavorites(recipe)}>
-                  Add to Favorites
-                </button>
-                <div className="recipe-details">
-                  <p><strong>Ready in:</strong> {recipe.readyInMinutes} mins</p>
-                  <p><strong>Servings:</strong> {recipe.servings}</p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p>No recipes found. Try searching for something else.</p>
-          )
-        )}
-      </div>
+      <main className="main-content">
+        <h1 className="hero-title">Discover Amazing Recipes</h1>
+        <p className="hero-subtitle">
+          Find the perfect dish by searching ingredients, cuisine types, or dietary preferences
+        </p>
 
-      <footer className="app-footer">
-        <p>Recipe Finder by <a href='https://www.linkedin.com/in/sirriayongwa/' target='blank'>Sirri Ayongwa</a> | © 2024 All rights reserved</p>
+        <div className="search-container">
+          <div className="search-wrapper">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search recipes by ingredients, cuisine, or name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && fetchRecipes()}
+            />
+            <button className="search-btn" onClick={fetchRecipes}>
+              🔍
+            </button>
+          </div>
+        </div>
+
+        <div className="results-section">
+          {results.length === 0 ? (
+            <div className="no-results">
+              {search ? `No recipes found for "${search}". Try a different search term!` :
+                'Search something delicious!'}
+            </div>
+          ) : (
+            <div className="results-grid">
+              {results.map(recipe => (
+                <div key={recipe.id} className="recipe-card" onClick={() => viewRecipe(recipe.id)}>
+                  <div className="recipe-image">
+                    <img src={recipe.image} alt={recipe.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                  <div className="recipe-content">
+                    <h3 className="recipe-title">{recipe.title}</h3>
+                    <div className="recipe-meta">
+                      <span>⏱️ {recipe.readyInMinutes} min</span>
+                      <span>🍽️ {recipe.servings} servings</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Favorites Sidebar */}
+      {showFavorites && (
+  <div className="favorites-sidebar">
+    <div className="sidebar-header">
+      <h3>My Favorites</h3>
+      <button className="close-sidebar-btn" onClick={toggleFavorites}>❌</button>
+    </div>
+    {favorites.length === 0 ? (
+      <p className="empty-favs-msg">Nothing in favorites. Search a recipe and add now!</p>
+    ) : (
+      <ul className="favorites-list">
+        {favorites.map((fav) => (
+          <li key={fav.id} className="fav-item">
+            <img src={fav.image} alt={fav.title} className="fav-thumb" />
+            <span className="fav-title">{fav.title}</span>
+            <button className="delete-icon" onClick={() => removeFromFavorites(fav.id)}>🗑️</button>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+)}
+
+
+      {/* Modal */}
+      {selectedRecipe && (
+        <div className="modal" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>{selectedRecipe.title}</h2>
+            <img src={selectedRecipe.image} alt={selectedRecipe.title} style={{ width: '100%', borderRadius: '8px' }} />
+            <p><strong>Preparation time:</strong> {selectedRecipe.readyInMinutes} mins</p>
+            <p>{(selectedRecipe.readyInMinutes <= 20 ? 'Easy' : selectedRecipe.readyInMinutes <= 40 ? 'Medium' : 'Hard')}</p>
+            <h3>Instructions</h3>
+            <p dangerouslySetInnerHTML={{ __html: selectedRecipe.instructions || "No instructions available." }} />
+            <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+              <button onClick={() => addToFavorites(selectedRecipe)}>❤️ Add to Favorites</button>
+              <button onClick={closeModal}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer className="footer">
+        <p>
+          &copy; 2024 Recipe Finder by
+          <a href='https://www.linkedin.com/in/sirri-ayongwa/' target='_blank' rel="noreferrer"> Sirri Ayongwa</a>
+          {' '}| Made with ❤️ for foodies
+        </p>
       </footer>
     </div>
   );
 }
-
-export default Recipe;
